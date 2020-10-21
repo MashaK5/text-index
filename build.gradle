@@ -1,0 +1,46 @@
+plugins {
+    id 'application'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    integTestImplementation.extendsFrom implementation
+    integTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.junit.jupiter:junit-jupiter:5.4.2"
+    integTestImplementation "org.jetbrains.kotlin:kotlin-test:1.4.10"
+}
+
+sourceSets.main.kotlin.srcDirs = ['src/main']
+sourceSets.test.kotlin.srcDirs = ['src/test']
+sourceSets {
+    integTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+        java {
+            srcDirs = ['src/integTest']
+        }
+    }
+}
+
+mainClassName = 'program.TextIndexKt'
+
+test {
+    useJUnitPlatform()
+}
+
+task integTest(type: Test){
+    testClassesDirs = sourceSets.integTest.output.classesDirs
+    classpath = sourceSets.integTest.runtimeClasspath
+    useJUnitPlatform()
+}
+
+check.dependsOn integTest
