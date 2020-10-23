@@ -4,7 +4,7 @@ logs/
 
 output.txt
 
-
+odict.csv
 
 # File-based project format
 *.iws

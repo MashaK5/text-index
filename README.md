@@ -1,11 +1,11 @@
-###Text index
+### Text index
 This program works with files in .txt format, composes an index of the text file and responds to user requests.
 
 **Description of correct format of input data:**
 * one file in .txt format
 * the file contains coherent text in Russian
 
-####Program operation mode
+#### Program operation mode
 * Compiling a text index for a file that does not already have one.
     >This file does not yet have a text index. The index will be compiled.  
     ...  
@@ -18,7 +18,7 @@ This program works with files in .txt format, composes an index of the text file
     >Please select the type of request you want 
     (enter the number and input data of this type of request separated by space):...                                                                                                                                                                                                                                                                                                                
 
-####Types of requests:
+#### Types of requests:
 1. Get a list of the given number of the most common words.  
 * **Input data:** one natural number
 * **Output data:**
@@ -44,7 +44,7 @@ This program works with files in .txt format, composes an index of the text file
     
 
 
-####Example
+#### Example
 ````bash
 
 ````
