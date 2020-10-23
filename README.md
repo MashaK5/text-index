@@ -1,4 +1,4 @@
-### Text index
+## Project "Text index"
 This program works with files in .txt format, composes an index of the text file and responds to user requests.
 
 **Description of correct format of input data:**
@@ -9,14 +9,13 @@ This program works with files in .txt format, composes an index of the text file
 * Compiling a text index for a file that does not already have one.
     >This file does not yet have a text index. The index will be compiled.  
     ...  
-    Index is compiled. Do you want to make a request? Enter "yes" or "no".
+    Index compiled. Do you want to make a request? Enter "yes" or "no".
 
     >This file already has a text index.  
     Do you want to make a request? Enter "yes" or "no".
    
 * Displays a response to a user request for a file that already has a text index.
-    >Please select the type of request you want 
-    (enter the number and input data of this type of request separated by space):...                                                                                                                                                                                                                                                                                                                
+    >Please select the type of request you want (enter the number):...                                                                                                                                                                                                                                                                                                                
 
 #### Types of requests:
 1. Get a list of the given number of the most common words.  
