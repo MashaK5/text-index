@@ -4,22 +4,41 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
 /**
  * This program works with files in .txt format, composes an index of the text file and responds to user requests.
- * @param {String} filename (file in .txt format)
  */
 
 /**
- * This class indicates that an incorrect number of files are filed or in an incorrect format.
+ * This class indicates incorrect number of arguments.
+ * There must be at least 2 of them.
  */
-class IncorrectArgsFormat(message: String): Exception(message)
+class IncorrectNumberOfArgs(message: String): Exception(message)
 
 /**
- * This class stores the type and input data of the request.
+ * This class indicates that file an incorrect format.
  */
-data class Request(val typeOfRequest: Int, val inputData: String)
+class IncorrectFilenameFormat(message: String): Exception(message)
 
+/**
+ * This class indicates that type of request is not number from 1 to 3.
+ */
+class IncorrectTypeOfRequest(message: String): Exception(message)
+
+/**
+ * This class indicates that input data for request an incorrect format (see correct input data format in README.md).
+ */
+class IncorrectInputDataForRequest(message: String): Exception(message)
+
+/**
+ * This class stores filename, the type of the request and input data for request.
+ */
+data class Request(val filename: String, val typeOfRequest: Int, val dataOfRequest: DataOfRequest?)
+
+/**
+ * This class stores data for request as a string and [formatData] for quick decryption of this line.
+ * @formatData {String} "word", "number" or "list".
+ */
+data class DataOfRequest(val formatData: String, val data: String)
 
 /**
  * This function generates a log file with the exact time in the name in the folder "logs".
@@ -37,206 +56,178 @@ fun createLogFile(): File {
 }
 
 /**
- * This function checks that user has given only one filename.
+ * This function displays the result of program's work and writes it in output.txt
  */
-fun isOneFile(args: Array<String>): String? {
-    when (args.size) {
-        0 -> IncorrectArgsFormat("No files are listed! Expect one file in .txt format.")
-        1 -> { return args[0] }
-        else -> IncorrectArgsFormat("Too many arguments! Expect one file in .txt format.")
+fun workWithOutput(output: MutableList<String>) {
+    for (line in output) {
+        println(line)
+        File("output.txt").appendText("$line\n")
     }
-    return null
+}
+
+/**
+ * This function checks that there are at least two arguments: file name and request type.
+ */
+fun isCorrectNumberOfArgs(args: Array<String>) {
+    if (args.size < 2) {
+        throw IncorrectNumberOfArgs("Too few arguments! Expect at least two arguments: filename and type of request.")
+    }
 }
 
 /**
  * This function checks that [filename] in .txt format.
  */
-fun isTXTFile(filename: String) {
+fun isCorrectFilename(filename: String): String {
     if (filename.takeLast(4) != ".txt") {
-        IncorrectArgsFormat("Incorrect file format! Expect one file in .txt format.")
+       throw IncorrectFilenameFormat("Incorrect filename format! Expect one file in .txt format.")
+    }
+    return filename
+}
+
+/**
+ * This function checks that [typeOfRequest] is number from 1 to 3.
+ */
+fun isCorrectTypeOfRequest(typeOfRequest: String): Int {
+    return when (typeOfRequest.toIntOrNull()) {
+        1 -> 1
+        2 -> 2
+        3 -> 3
+        else -> throw IncorrectTypeOfRequest("Incorrect type of request! Expect one number from 1 to 3.")
     }
 }
 
 /**
- * This function shows how file with text index for [filename] should look.
- * @return path to index file
+ * This function checks if the input in [args] is correct for the specified request type.
  */
-fun nameOfIndexFile(filename: String): File {
-    val indexDir = File("indices/")
-    indexDir.mkdir()
-    val indexFileName = "index_$filename"
-    val indexFile = File(indexDir, indexFileName)
-    return indexFile
-}
-
-/**
- * This function checks if [filename] has file with text index.
- */
-fun haveIndexFile(filename: String): Boolean {
-    return nameOfIndexFile(filename).exists()
-}
-
-/**
- * This function creates an index of the text for [filename], if it does not already exist,
- * and asks if the user wants to make a request.
- */
-fun questionAboutTheDesireToRequest(filename: String) {
-    if (haveIndexFile(filename)) {
-        println("This file does not yet have a text index. The index will be compiled.")
-        createIndexFile(filename)
-        println("Index is compiled. Do you want to make a request? Enter \"yes\" or \"no\".")
-    } else
-        println(
-            """This file already has a text index.
-               Do you want to make a request? Enter "yes" or "no".""")
-}
-
-/**
- * This function processes the answer to the question if the user wants to make a request.
- */
-fun processingAnswerAboutTheDesireToRequest(): Boolean {
-    val wantToMakeRequest = readLine()
-    when (wantToMakeRequest) {
-        "yes" -> return true
-        "no"  -> return false
-        else  -> {
-            println("Incorrect answer format! Enter \"yes\" or \"no\".")
-            processingAnswerAboutTheDesireToRequest()
-        }
-    }
-    return false
-}
-
-fun createIndexFile(filename: String) {
-    val indexFile = nameOfIndexFile(filename)
-    //дохрена всего
-}
-
-/**
- * This function offers to select the type of request.
- */
-fun questionAboutTypeOfRequest() {
-    println(
-        """Please select the type of request you want (enter the number):
-            1. Get a list of the given number of the most common words.
-            2. Get full information about the use of a given word
-            (number of occurrences, used word forms, page numbers).
-            3. Get full information (see item 2) about the use of words from a given group 
-            (for example, furniture items, verbs of movement, etc.).
-            4. Output all lines containing a given word (in any of the word forms).""")
-
-}
-
-/**
- * This function processes the answer to the question about type of request.
- */
-fun processingAnswerAboutTypeOfRequest(): Int {
-    val typeOfRequest = readLine()
-    when (typeOfRequest!!.toIntOrNull()) {
-        1 -> return 1
-        2 -> return 2
-        3 -> return 3
-        4 -> return 4
-        else -> {
-            println("Incorrect answer format! Enter a number from 1 to 4.")
-            processingAnswerAboutTypeOfRequest()
-        }
-    }
-    return -1
-}
-
-/**
- * This function prompts you to enter data for the request.
- */
-fun offerToEnterDataForRequest(typeOfRequest: Int): Request {
+fun isCorrectDataForRequest(typeOfRequest: Int, args: Array<String>): DataOfRequest?  {
     when (typeOfRequest) {
-        1 -> println("Enter one natural number.")
-        2 -> println("Enter one word in Russian.")
-        3 -> println(
-                """Choose one group from the proposed ones (copy and paste into the input line) or enter your own
-                    (expect name of group, :, list of words with spaces):
-                    Части тела:рука нога нос уши глаза губы колено плечо шея
-                    Птицы:голубь снегирь воробей иволга
-                    Звери:лошадь лиса осел тигр кошка заяц чучундра""")
-        4 -> println("Enter one word in Russian.")
+        1 -> isCorrectDataForFirstRequest(args)
+        2 -> return isCorrectDataForSecondRequest(args)
+        3 -> return isCorrectDataForThirdRequest(args)
     }
-
-    val inputData = readLine()
-    when (typeOfRequest) {
-        1 -> if (inputValidationForFirstType(inputData!!))
-            return Request(1, inputData)
-
-        2 -> if (inputData!!.matches(Regex("""([а-яА-Я-])""")))
-            return Request(2, inputData)
-
-        3 -> if (inputValidationForThirdType(inputData!!))
-            return Request(3, inputData)
-
-        4 -> if (inputData!!.matches(Regex("""([а-яА-Я-])""")))
-            return Request(4, inputData)
-    }
-    println("Incorrect answer format!")
-    offerToEnterDataForRequest(typeOfRequest)
-    return Request(-1, "-1")
+    return null
 }
 
 /**
- * This function checks the correctness of the input data for the first type of request.
- * @format one natural number
+ * This function checks if the input in [args] is correct for request type 1.
  */
-fun inputValidationForFirstType(inputData: String): Boolean {
-    if (inputData.toIntOrNull() != null)
-        if (inputData.toInt() > 0)
-            return true
-    return false
+fun isCorrectDataForFirstRequest(args: Array<String>) {
+    if (args.size != 2) {
+        throw IncorrectInputDataForRequest("Too many arguments after filename and type of request for request type 1!")
+    }
 }
 
 /**
- * This function checks the correctness of the input data for the third type of request.
- * @format <name>:<word> <word> ...
+ * This function checks if the input in [args] is correct for request type 1.
+ * It must be one word in Russian, or one natural number, or a list of words in Russian.
  */
-fun inputValidationForThirdType(inputData: String): Boolean {
-    val dataOfGroup = inputData.split(":")
-
-    if (dataOfGroup.size == 2) {
-        val name = dataOfGroup[0]
-        val words = dataOfGroup[1].split(" ")
-
-        /**
-         * This block checks if the input data are Russian words.
-         * Spaces are allowed in the group name.
-         */
-        val isCorrectName = name.matches(Regex("""([а-яА-Я- ])"""))
-        val isCorrectListOfWords = words.filterNot { it.matches(Regex("""([а-яА-Я-])""")) }.isEmpty()
-        if (isCorrectName && isCorrectListOfWords)
-            return true
+fun isCorrectDataForSecondRequest(args: Array<String>): DataOfRequest {
+    return when (args.size) {
+        2 -> throw IncorrectInputDataForRequest("Too few arguments after filename and type of request for request type 2!")
+        3 -> numberOrWord(args[2])
+        else -> correctListOfWord(args)
     }
-    return false
 }
 
+/**
+ * This function checks if [inputData] is a valid number or a word.
+ */
+fun numberOrWord(inputData: String): DataOfRequest {
+    return if (inputData.toIntOrNull() != null) {
+        if (inputData.toInt() <= 0) {
+            throw IncorrectInputDataForRequest("Incorrect number for request type 2! Expect a natural number.")
+        }
+        DataOfRequest("number", inputData)
+    }
+    else {
+        if (!inputData.matches(Regex("""([а-яА-Я-])"""))) {
+            throw IncorrectInputDataForRequest("Incorrect word for request type 2! Expect a word in Russian.")
+        }
+        DataOfRequest("number", inputData)
+    }
+}
 
+/**
+ * This function checks if the input in [args] is correct group of words for request type 2,.
+ * It should be words in Russian.
+ * And concatenates all words into one line, separating them with spaces.
+ */
+fun correctListOfWord(args: Array<String>): DataOfRequest {
+    val words = args.toList().drop(2)
+    val isCorrectListOfWords = words.filterNot { it.matches(Regex("""([а-яА-Я-])""")) }.isEmpty()
+    if (!isCorrectListOfWords) {
+        throw IncorrectInputDataForRequest("Incorrect group of words for request type 2! Expect words in Russian.")
+    }
+    val wordsInString = words.reduce { current, next -> current + "" + next}
+    return DataOfRequest("list", wordsInString)
+}
 
-//индекс должен где-то храниться
-//файлик не изменится (если ловим исключение, говорим, что надо перестроить индекс)
+/**
+ * This function checks if the input in [args] is correct for request type 3.
+ * It should be one word in Russian.
+ */
+fun isCorrectDataForThirdRequest(args: Array<String>): DataOfRequest {
+    if (args.size != 3) {
+        throw IncorrectInputDataForRequest("Wrong amount of arguments after filename and type of request for request type 3!")
+    }
+    val data = args[2]
+    if (!data.matches(Regex("""([а-яА-Я-])"""))) {
+        throw IncorrectInputDataForRequest("Incorrect word for request type 3! Expect a word in Russian.")
+    }
+    return DataOfRequest("word", data)
+}
+
+/**
+ * This function combines the results of all checks and returns the correct request.
+ */
+fun createCorrectRequest(args: Array<String>): Request {
+    isCorrectNumberOfArgs(args)
+    val filename = isCorrectFilename(args[0])
+    val typeOfRequest = isCorrectTypeOfRequest(args[1])
+    val inputData = isCorrectDataForRequest(typeOfRequest, args)
+    val request = Request(filename, typeOfRequest, inputData)
+    return request
+}
+
 
 fun main(args: Array<String>) {
+    val output = mutableListOf<String>()
+    File("output.txt").delete()
     val logFile = createLogFile()
 
     try {
-        val filename = isOneFile(args)
-        isTXTFile(filename!!)                          // проверить, что файл состоит из русского связного текста
-
-        questionAboutTheDesireToRequest(filename)
-        if (processingAnswerAboutTheDesireToRequest()) {
-            questionAboutTypeOfRequest()
-            val typeOfRequest = processingAnswerAboutTypeOfRequest()
-            val request = offerToEnterDataForRequest(typeOfRequest)
-        }
+        val request = createCorrectRequest(args)
+        //print(request)
     }
     catch (e: Exception) {
         /**
          * This block prints an error message to the screen and writes a description of the error to log.
          */
         logFile.appendText("$e\n")
+        output.add("$e")
     }
+    workWithOutput(output)
 }
+
+
+
+///**
+// * This function shows how file with text index for [filename] should look.
+// * @return path to index file
+// */
+//fun nameOfIndexFile(filename: String): File {
+//    val indexDir = File("indices/")
+//    indexDir.mkdir()
+//    val indexFileName = "index_$filename"
+//    val indexFile = File(indexDir, indexFileName)
+//    return indexFile
+//}
+//
+///**
+// * This function checks if [filename] has file with text index.
+// */
+//fun haveIndexFile(filename: String): Boolean {
+//    return nameOfIndexFile(filename).exists()
+//}
+//
+

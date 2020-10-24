@@ -1,46 +1,37 @@
 ## Project "Text index"
 This program works with files in .txt format, composes an index of the text file and responds to user requests.
 
-**Description of correct format of input data:**
-* one file in .txt format
-* the file contains coherent text in Russian
+#### Description of correct format of input data:
+1. **Filename**
+    * one file in .txt format
+    * the file contains coherent text in Russian
+2. **Type of request**
+    * one number from 1 to 3
+3. **Request**
+    * correct input data (see **Correct input data** for selected request)
+    
+- There must be separators (one space) between 1, 2 and 3 inputs.
 
-#### Program operation mode
-* Compiling a text index for a file that does not already have one.
-    >This file does not yet have a text index. The index will be compiled.  
-    ...  
-    Index compiled. Do you want to make a request? Enter "yes" or "no".
-
-    >This file already has a text index.  
-    Do you want to make a request? Enter "yes" or "no".
-   
-* Displays a response to a user request for a file that already has a text index.
-    >Please select the type of request you want (enter the number):...                                                                                                                                                                                                                                                                                                                
-
+                                                                                                                                                                                                                                                                                              
 #### Types of requests:
-1. Get a list of the given number of the most common words.  
-* **Input data:** one natural number
-* **Output data:**
+
+1. Compilation of an index for a given file in txt format.  
+    **Correct input data**: nothing  
     
-2. Get full information about the use of a given word 
-    (number of occurrences, used word forms, page numbers).
-* **Input data:** one word in Russian
-* **Output data:**
+2. Displaying information for a given file with a text index:
+    * a list of a given number of the most common words;  
+        **Correct input data**: one natural number  
         
-3. Get full information (see item 2) about the use of words from a given group 
-    (for example, furniture items, verbs of movement, etc.).
-* **Input data:** nothing
-* A list of existing groups will be displayed.
-  Select one of the suggested groups (copy the line you want and paste into the input line) 
-  or create a new one:
-    - 
-* **Output data:**
+    * complete information about the use of a given word
+    (number of occurrences, used word forms, page numbers)  
+        **Correct input data**: one word in Russian  
         
-4. Output all lines containing a given word (in any of the word forms).
-* **Input data:** one word in Russian
-* **Output data:**
-    
-    
+    * data on the use of words from a given group
+    (for example, pieces of furniture, verbs of movement, etc.).  
+        **Correct input data**: several words in Russian, separated by spaces   
+         
+3. Displays all lines containing the specified word (in any of the word forms).  
+    **Correct input data**: one word in Russian
 
 
 #### Example
