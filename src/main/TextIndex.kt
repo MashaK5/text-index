@@ -1,3 +1,5 @@
+@file:Suppress("UNREACHABLE_CODE")
+
 package program
 
 import org.apache.commons.csv.CSVFormat
@@ -64,9 +66,9 @@ enum class Format {
  */
 data class InformationAboutWord(
     val numberOfOccurrences: Int,
-    val usedWordForms: List<String>,
-    val pageNumbers: List<Int>,
-    val linesNumbers: List<Int>
+    val usedWordForms:MutableList<String>,
+    val pageNumbers: MutableList<Int>,
+    val linesNumbers: MutableList<Int>
 )
 
 /**
@@ -78,6 +80,13 @@ typealias Word = String
  * This is the type of index.
  */
 typealias Index = HashMap<Word, InformationAboutWord>
+
+/**
+ * This class will store the vocabulary.
+ * @key word form
+ * @value main word form
+ */
+typealias Vocabulary = HashMap<Word, Word>
 
 
 /**
@@ -226,29 +235,108 @@ fun createCorrectRequest(args: Array<String>): Request {
 }
 
 
-fun processingRequest(request: Request): String {                                         //add documentation
-    var index = Index()
-    val indexFile = nameOfIndexFile(request.filename)
+/**
+ * This program handles the correct request.
+ * @return {String} result of program work
+ */
+fun processingRequest(request: Request): String {
+    val (textFileName, typeOfRequest, dataOfRequest) = request
+    val numberedTextFile = numberingTextFile(textFileName)
+    val vocabulary = createVocabulary()
 
+    var index = Index()
+    val indexFile = createIndexFile(textFileName)
+
+    /**
+     * This block checks for the existence of an index for this file,
+     * collects it by the index file,
+     * or creates a new one and writes to index file.
+     */
     if (!haveIndexFile(indexFile)) {
-        index = createIndex(request.filename)
+        index = createIndex(numberedTextFile, vocabulary)
         makeIndexFileByIndex(index, indexFile)
     }
     else
         index = makeIndexByIndexFile(indexFile)
 
-    return when (request.typeOfRequest) {
+    /**
+     * This block processes a request for a file that already has a file index.
+     */
+    return when (typeOfRequest) {
         TypeOfRequest.FIRST -> "The index is built."
-        TypeOfRequest.SECOND -> processingRequestTypeSecond(index, request.dataOfRequest!!)
-        TypeOfRequest.THIRD -> processingRequestTypeThird(index, request)
+        TypeOfRequest.SECOND -> processingRequestTypeSecond(index, dataOfRequest!!)
+        TypeOfRequest.THIRD -> processingRequestTypeThird(index, dataOfRequest!!.data, numberedTextFile)
     }
+    numberedTextFile.delete()
+}
+
+/**
+ * This function indexes the lines of a text file, excluding empty ones,
+ * and writes them to a new file, adding its number and page number before the line.
+ * @return text file without empty lines and with (index,page) before every line.
+ */
+fun numberingTextFile(textFileName: String): File {
+    val textFileWithNumberingName = textFileName.dropLast(4) + "_num.txt"
+    val textFileWithNumbering = File(textFileWithNumberingName)
+
+    val textFile = File(textFileName)
+    textFile.useLines { lines -> lines.filterNot { it.isEmpty() }.forEachIndexed {
+            index, line ->
+        run {
+            val page = (index - index % 45) / 45
+            textFileWithNumbering.appendText("($index,$page) $line")
+        }
+    }
+    }
+    return textFileWithNumbering
+}
+
+/**
+ * This function processes odict.csv and writes data from it to the vocabulary.
+ * @keys word forms
+ * @values main word forms (word)
+ */
+fun createVocabulary(): Vocabulary {
+    val vocabulary = Vocabulary()
+    val odictCSVPath = "odict.csv"
+
+    Files.newBufferedReader(Paths.get(odictCSVPath), Charset.forName("Windows-1251")).use {
+            line -> CSVParser(line, CSVFormat.DEFAULT).use {
+                val oneWordForms = mutableListOf<Word>()
+                it.forEach { oneWordForms.add(it.toString()) }
+
+                /**
+                 * [oneWordForms[0]] is word
+                 * [oneWordForms[1]] is type of word
+                 * the rest of the list elements are word forms
+                 */
+                if (isNotServiceWord(oneWordForms[1])) {
+                    oneWordForms.forEach { vocabulary[it] = oneWordForms[0] }
+                }
+            }
+    }
+    return vocabulary
+}
+
+/**
+ * This function checks that a word is not a preposition, union, particle, or interjection.
+ */
+fun isNotServiceWord(word: String): Boolean {
+    when (word) {
+        "част." -> return false
+        "межд." -> return false
+        "союз" -> return false
+        "предл." -> return false
+        "с" -> if (word.length == 1) return false
+    }
+    return true
 }
 
 /**
  * This function shows how file with text index for [textFileName] should look.
  * @return path to index file
  */
-fun nameOfIndexFile(textFileName: String): File {
+fun createIndexFile(textFileName: String): File {
     val indexDir = File("indices/")
     indexDir.mkdir()
     val indexFileName = "$textFileName(index)"
@@ -257,23 +345,79 @@ fun nameOfIndexFile(textFileName: String): File {
 }
 
 /**
- * This function checks if [textFileName] has file with text index.
+ * This function checks if [indexFile] has file with text index.
  */
 fun haveIndexFile(indexFile: File): Boolean {
     return indexFile.exists()
 }
 
-fun createIndex(textFileName: String): Index {
+/**
+ * This function builds the file index.
+ * Each line is separated by spaces into an array of words that are added to the dictionary.
+ */
+fun createIndex(numberedTextFile: File, vocabulary: Vocabulary): Index {
     val index = Index()
 
+    numberedTextFile.useLines { lines -> lines.forEach {
+        val words = it.split(" ")
 
-    val odictCSVPath = "odict.csv"
-
-        Files.newBufferedReader(Paths.get(odictCSVPath), Charset.forName("Windows-1251")).use {
-                reader -> CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader()).use {
-                    csvParser -> for (csvRecord in csvParser) { }
-                }
+        /**
+         * The line looks like: (line,page) ...
+         */
+        val lineNumber = words[0].drop(1).substringBefore(",").toInt()
+        val pageNumber = words[0].dropLast(1).substringAfter(",").toInt()
+        words.map { onlyWord(it) }.forEach {
+            word -> addWordToIndex(index, word, vocabulary, lineNumber, pageNumber)
         }
+    }
+    }
+    return index
+}
+
+/**
+ * This function clears a word from a string of punctuation marks
+ * that may have remained around it after being separated by spaces.
+ */
+fun onlyWord(wordWithPunctuationMarks: String): Word {
+    val notRussianLetter = Regex("""([^a-zA-Z])""")
+    val word = wordWithPunctuationMarks
+        .substringAfter("$notRussianLetter")
+        .substringBeforeLast("$notRussianLetter")
+    return word
+}
+
+/**
+ * This function adds a word to the index or updates the data for it if it is already in the index.
+ */
+fun addWordToIndex(index: Index, wordFromText: Word, vocabulary: Vocabulary, line:Int, page: Int): Index {
+    val mainWordFord = vocabulary[wordFromText]
+    if (mainWordFord != null) {
+        /**
+         * If the word is in the vocabulary, see if its main form has been added to the index.
+         */
+        val info = index[mainWordFord]
+        if (info == null) {
+            index[mainWordFord] = InformationAboutWord(
+                1,
+                mutableListOf(wordFromText),
+                mutableListOf(page),
+                mutableListOf(line)
+            )
+        }
+        else {
+            val (number, wordForms, pages, lines) = info
+            wordForms.add(wordFromText)
+            pages.add(page)
+            listOf(line)
+            index[mainWordFord] = InformationAboutWord(
+                number + 1,
+                wordForms,
+                pages,
+                lines
+            )
+        }
+    }
+    return index
 }
 
 /**
@@ -282,7 +426,7 @@ fun createIndex(textFileName: String): Index {
  */
 fun makeIndexFileByIndex(index: Index, indexFile: File) {
     index.forEach {
-        val word = it.key.toString()
+        val word = it.key
         val numberOfOccur = it.value.numberOfOccurrences.toString()
         val usedWordForms = it.value.usedWordForms.joinToString(" ")
         val pageNum = it.value.pageNumbers.joinToString(" ")
@@ -305,9 +449,9 @@ fun makeIndexByIndexFile(indexFile: File): Index {
         val word = wordAndInfo[0]
 
         val numberOfOccurrences = wordAndInfo[1].toInt()
-        val usedWordForms = wordAndInfo[2].split(" ")
-        val pageNumbers = wordAndInfo[3].split(" ").map { it.toInt() }
-        val linesNumbers = wordAndInfo[4].split(" ").map { it.toInt() }
+        val usedWordForms = wordAndInfo[2].split(" ").toMutableList()
+        val pageNumbers = wordAndInfo[3].split(" ").map { it.toInt() }.toMutableList()
+        val linesNumbers = wordAndInfo[4].split(" ").map { it.toInt() }.toMutableList()
 
         val info = InformationAboutWord(numberOfOccurrences, usedWordForms, pageNumbers, linesNumbers)
         index[word] = info
@@ -365,7 +509,7 @@ fun resultOfWordRequest(index: Index, word: String): String {
  */
 fun resultOfGroupRequest(index: Index, data: String): String {
     val words = data.split(" ")
-    val result = words.joinToString("/n/n") { resultOfWordRequest(index, it) }
+    val result = words.joinToString("/n/n/n") { resultOfWordRequest(index, it) }
     return result
 }
 
@@ -373,17 +517,32 @@ fun resultOfGroupRequest(index: Index, data: String): String {
  * This function processes a request of the third type to display all lines where a word occurs.
  * @return the result of processing the request as a string
  */
-fun processingRequestTypeThird(index: Index, request: Request): String {
-    val filename = request.filename
-    val word = request.dataOfRequest!!.data
-
-    val textFile = File(filename)
+fun processingRequestTypeThird(index: Index, word: String, numberedTextFile: File): String {
     val searchedWordInfo = index[word]
-    if (searchedWordInfo != null) {
-        val lines = searchedWordInfo.linesNumbers
-        //дописать
+    return if (searchedWordInfo != null) {
+        val linesNumbers = searchedWordInfo.linesNumbers
+        val result = linesNumbers.joinToString("/n/n") { lineByNumber(it, numberedTextFile) }
+        result
     }
-    else return "Word $word was not found."
+    else {
+        val result = "Word $word was not found."
+        result
+    }
+}
+
+/**
+ * This function finds a string by its number in a text file and returns it.
+ */
+fun lineByNumber(lineNumber: Int, numberedTextFile: File): String {
+    numberedTextFile.useLines { lines -> lines.forEach {
+        val thisLineNumber = it.drop(1).substringBefore(",").toInt()
+        if (lineNumber == thisLineNumber) {
+            val line = it.substringAfter(") ")
+            return line
+        }
+    }
+    }
+    return ""
 }
 
 /**

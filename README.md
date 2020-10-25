@@ -1,6 +1,9 @@
 ## Project "Text index"
 
-This program works with files in .txt format, composes an index of the text file and responds to user requests.
+This program works with files in .txt format, composes an index of the text file and responds to user requests.  
+
+Text files consist of lines, lines are collected into pages 
+(each page contains exactly 45 lines, blank lines are not counted).
 
 #### Description of correct format of input data:
 
@@ -62,7 +65,7 @@ This program works with files in .txt format, composes an index of the text file
         Blocks are separated by blank lines.
                  
 3. Displays all lines containing the specified word (in any of the word forms).  
-    **Output**: 
+    **Output**: lines containing the specified word, separated by blank lines.
 
    
    
