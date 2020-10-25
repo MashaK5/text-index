@@ -33,7 +33,7 @@ sourceSets {
     }
 }
 
-mainClassName = 'program.TextIndexKt'
+mainClassName = 'program.MainKt'
 
 test {
     useJUnitPlatform()

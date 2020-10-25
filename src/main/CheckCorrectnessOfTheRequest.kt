@@ -51,8 +51,13 @@ fun isCorrectNumberOfArgs(args: Array<String>) {
  * This function checks that [filename] in .txt format.
  */
 fun isCorrectFilename(filename: String): String {
-    if (filename.takeLast(4) != ".txt") {
-        throw IncorrectFilenameFormat("Incorrect filename format! Expect one file in .txt format.")
+    if (filename.length < 5) {
+        throw IncorrectFilenameFormat("Incorrect filename format! Too small string.")
+    }
+    else {
+        if ((filename.takeLast(4) != ".txt")&&(filename.length > 4)) {
+            throw IncorrectFilenameFormat("Incorrect filename format! Expect one file in .txt format.")
+        }
     }
     return filename
 }
@@ -119,10 +124,21 @@ fun numberOrWord(inputData: String): DataOfRequest {
      * Checking that this is a correct word.
      */
     else {
-        if (!inputData.matches(Regex("""[а-яА-Я]([а-я-])[а-я]"""))) {
+        if (!isRussianWord(inputData)) {
             throw IncorrectInputDataForRequest("Incorrect word for request type 2! Expect a word in Russian.")
         }
         DataOfRequest(Format.WORD, inputData)
+    }
+}
+
+/**
+ * This function checks if a word is Russian (primitive).
+ */
+fun isRussianWord(word: Word): Boolean {
+    return when (word.length) {
+        1 -> word.matches(Regex("""[а-яА-Я]"""))
+        2 -> word.matches(Regex("""[а-яА-Я][а-яА-Я]"""))
+        else -> word.matches(Regex("""[а-яА-Я][а-яА-Я-]*[а-яА-Я]"""))
     }
 }
 
@@ -133,7 +149,7 @@ fun numberOrWord(inputData: String): DataOfRequest {
  */
 fun correctListOfWord(args: Array<String>): DataOfRequest {
     val words = args.toList().drop(2)
-    val isCorrectListOfWords = words.filterNot { it.matches(Regex("""[а-яА-Я]([а-я-])[а-я]""")) }.isEmpty()
+    val isCorrectListOfWords = words.filterNot { isRussianWord(it) }.isEmpty()
     if (!isCorrectListOfWords) {
         throw IncorrectInputDataForRequest("Incorrect group of words for request type 2! Expect words in Russian.")
     }
@@ -150,7 +166,7 @@ fun isCorrectDataForThirdRequest(args: Array<String>): DataOfRequest {
         throw IncorrectInputDataForRequest("Wrong amount of arguments after filename and type of request for request type 3!")
     }
     val data = args[2]
-    if (!data.matches(Regex("""([а-яА-Я-])"""))) {
+    if (!isRussianWord(data)) {
         throw IncorrectInputDataForRequest("Incorrect word for request type 3! Expect a word in Russian.")
     }
     return DataOfRequest(Format.WORD, data)
