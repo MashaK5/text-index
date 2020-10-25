@@ -37,16 +37,31 @@ class IncorrectInputDataForRequest(message: String): Exception(message)
 /**
  * This class stores filename, the type of the request and input data for request.
  */
-data class Request(val filename: String, val typeOfRequest: Int, val dataOfRequest: DataOfRequest?)
+data class Request(val filename: String, val typeOfRequest: TypeOfRequest, val dataOfRequest: DataOfRequest?)
+
+/**
+ * This class stores all possible types of valid requests.
+ */
+enum class TypeOfRequest {
+    FIRST, SECOND, THIRD
+}
 
 /**
  * This class stores data for request as a string and [formatData] for quick decryption of this line.
  * @formatData {String} "word", "number" or "group".
  */
-data class DataOfRequest(val formatData: String, val data: String)
+data class DataOfRequest(val formatData: Format, val data: String)
 
-typealias Word = String
+/**
+ * This class stores three types of input data format for a request.
+ */
+enum class Format {
+    NUMBER, WORD, GROUP
+}
 
+/**
+ * This class stores all the necessary information about the word.
+ */
 data class InformationAboutWord(
     val numberOfOccurrences: Int,
     val usedWordForms: List<String>,
@@ -54,7 +69,16 @@ data class InformationAboutWord(
     val linesNumbers: List<Int>
 )
 
+/**
+ * This is the type of word in the index.
+ */
+typealias Word = String
+
+/**
+ * This is the type of index.
+ */
 typealias Index = HashMap<Word, InformationAboutWord>
+
 
 /**
  * This function generates a log file with the exact time in the name in the folder "logs".
@@ -69,16 +93,6 @@ fun createLogFile(): File {
     val logName = "$dateTime.log"
     val logFile = File(logsDir, logName)
     return logFile
-}
-
-/**
- * This function displays the result of program's work and writes it in output.txt
- */
-fun workWithOutput(output: MutableList<String>) {
-    for (line in output) {
-        println(line)
-        File("output.txt").appendText("$line\n")
-    }
 }
 
 /**
@@ -103,11 +117,11 @@ fun isCorrectFilename(filename: String): String {
 /**
  * This function checks that [typeOfRequest] is number from 1 to 3.
  */
-fun isCorrectTypeOfRequest(typeOfRequest: String): Int {
+fun isCorrectTypeOfRequest(typeOfRequest: String): TypeOfRequest {
     return when (typeOfRequest.toIntOrNull()) {
-        1 -> 1
-        2 -> 2
-        3 -> 3
+        1 -> TypeOfRequest.FIRST
+        2 -> TypeOfRequest.SECOND
+        3 -> TypeOfRequest.THIRD
         else -> throw IncorrectTypeOfRequest("Incorrect type of request! Expect one number from 1 to 3.")
     }
 }
@@ -115,22 +129,22 @@ fun isCorrectTypeOfRequest(typeOfRequest: String): Int {
 /**
  * This function checks if the input in [args] is correct for the specified request type.
  */
-fun isCorrectDataForRequest(typeOfRequest: Int, args: Array<String>): DataOfRequest?  {
-    when (typeOfRequest) {
-        1 -> isCorrectDataForFirstRequest(args)
-        2 -> return isCorrectDataForSecondRequest(args)
-        3 -> return isCorrectDataForThirdRequest(args)
+fun isCorrectDataForRequest(typeOfRequest: TypeOfRequest, args: Array<String>): DataOfRequest?  {
+    return when (typeOfRequest) {
+        TypeOfRequest.FIRST -> isCorrectDataForFirstRequest(args)
+        TypeOfRequest.SECOND -> isCorrectDataForSecondRequest(args)
+        TypeOfRequest.THIRD -> isCorrectDataForThirdRequest(args)
     }
-    return null
 }
 
 /**
  * This function checks if the input in [args] is correct for request type 1.
  */
-fun isCorrectDataForFirstRequest(args: Array<String>) {
+fun isCorrectDataForFirstRequest(args: Array<String>): DataOfRequest? {
     if (args.size != 2) {
         throw IncorrectInputDataForRequest("Too many arguments after filename and type of request for request type 1!")
     }
+    return null
 }
 
 /**
@@ -156,7 +170,7 @@ fun numberOrWord(inputData: String): DataOfRequest {
         if (inputData.toIntOrNull()!! <= 0) {
             throw IncorrectInputDataForRequest("Incorrect number for request type 2! Expect a natural number.")
         }
-        DataOfRequest("number", inputData)
+        DataOfRequest(Format.NUMBER, inputData)
     }
     /**
      * Checking that this is a correct word.
@@ -165,7 +179,7 @@ fun numberOrWord(inputData: String): DataOfRequest {
         if (!inputData.matches(Regex("""[а-яА-Я]([а-я-])[а-я]"""))) {
             throw IncorrectInputDataForRequest("Incorrect word for request type 2! Expect a word in Russian.")
         }
-        DataOfRequest("word", inputData)
+        DataOfRequest(Format.WORD, inputData)
     }
 }
 
@@ -181,7 +195,7 @@ fun correctListOfWord(args: Array<String>): DataOfRequest {
         throw IncorrectInputDataForRequest("Incorrect group of words for request type 2! Expect words in Russian.")
     }
     val wordsInString = words.joinToString(" ")
-    return DataOfRequest("group", wordsInString)
+    return DataOfRequest(Format.GROUP, wordsInString)
 }
 
 /**
@@ -196,7 +210,7 @@ fun isCorrectDataForThirdRequest(args: Array<String>): DataOfRequest {
     if (!data.matches(Regex("""([а-яА-Я-])"""))) {
         throw IncorrectInputDataForRequest("Incorrect word for request type 3! Expect a word in Russian.")
     }
-    return DataOfRequest("word", data)
+    return DataOfRequest(Format.WORD, data)
 }
 
 /**
@@ -223,11 +237,11 @@ fun processingRequest(request: Request): String {                               
     else
         index = makeIndexByIndexFile(indexFile)
 
-    when (request.typeOfRequest) {
-        2 -> return processingRequestTypeSecond(index, request.dataOfRequest!!)
-        3 -> return processingRequestTypeThird(index, request.dataOfRequest!!)
+    return when (request.typeOfRequest) {
+        TypeOfRequest.FIRST -> "The index is built."
+        TypeOfRequest.SECOND -> processingRequestTypeSecond(index, request.dataOfRequest!!)
+        TypeOfRequest.THIRD -> processingRequestTypeThird(index, request)
     }
-    return ""
 }
 
 /**
@@ -251,6 +265,8 @@ fun haveIndexFile(indexFile: File): Boolean {
 
 fun createIndex(textFileName: String): Index {
     val index = Index()
+
+
     val odictCSVPath = "odict.csv"
 
         Files.newBufferedReader(Paths.get(odictCSVPath), Charset.forName("Windows-1251")).use {
@@ -305,12 +321,11 @@ fun makeIndexByIndexFile(indexFile: File): Index {
  */
 fun processingRequestTypeSecond(index: Index, dataOfRequest: DataOfRequest): String {
     val (format, data) = dataOfRequest
-    when (format) {
-        "number" -> return resultOfNumberRequest(index, data)
-        "word" -> return resultOfWordRequest(index, data)
-        "group" -> return resultOfGroupRequest(index, data)
+    return when (format) {
+        Format.NUMBER -> resultOfNumberRequest(index, data)
+        Format.WORD -> resultOfWordRequest(index, data)
+        Format.GROUP -> resultOfGroupRequest(index, data)
     }
-    return ""
 }
 
 /**
@@ -323,7 +338,7 @@ fun resultOfNumberRequest(index: Index, data: String): String {
         number = index.size
     }
     val commonWords = index.toList().sortedByDescending { it.second.numberOfOccurrences }.take(number)
-    val result = commonWords.joinToString(" ") { "$it.first" }
+    val result = commonWords.joinToString(", ") { "$it.first" }
     return result
 }
 
@@ -358,8 +373,11 @@ fun resultOfGroupRequest(index: Index, data: String): String {
  * This function processes a request of the third type to display all lines where a word occurs.
  * @return the result of processing the request as a string
  */
-fun processingRequestTypeThird(index: Index, dataOfRequest: DataOfRequest): String {
-    val (_, word) = dataOfRequest
+fun processingRequestTypeThird(index: Index, request: Request): String {
+    val filename = request.filename
+    val word = request.dataOfRequest!!.data
+
+    val textFile = File(filename)
     val searchedWordInfo = index[word]
     if (searchedWordInfo != null) {
         val lines = searchedWordInfo.linesNumbers
@@ -368,6 +386,15 @@ fun processingRequestTypeThird(index: Index, dataOfRequest: DataOfRequest): Stri
     else return "Word $word was not found."
 }
 
+/**
+ * This function displays the result of program's work and writes it in output.txt
+ */
+fun workWithOutput(output: MutableList<String>) {
+    for (line in output) {
+        println(line)
+        File("output.txt").appendText("$line\n")
+    }
+}
 
 fun main(args: Array<String>) {
     val output = mutableListOf<String>()
