@@ -1,6 +1,11 @@
 package program
 
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVParser
 import java.io.File
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -36,9 +41,20 @@ data class Request(val filename: String, val typeOfRequest: Int, val dataOfReque
 
 /**
  * This class stores data for request as a string and [formatData] for quick decryption of this line.
- * @formatData {String} "word", "number" or "list".
+ * @formatData {String} "word", "number" or "group".
  */
 data class DataOfRequest(val formatData: String, val data: String)
+
+typealias Word = String
+
+data class InformationAboutWord(
+    val numberOfOccurrences: Int,
+    val usedWordForms: List<String>,
+    val pageNumbers: List<Int>,
+    val linesNumbers: List<Int>
+)
+
+typealias Index = HashMap<Word, InformationAboutWord>
 
 /**
  * This function generates a log file with the exact time in the name in the folder "logs".
@@ -133,17 +149,23 @@ fun isCorrectDataForSecondRequest(args: Array<String>): DataOfRequest {
  * This function checks if [inputData] is a valid number or a word.
  */
 fun numberOrWord(inputData: String): DataOfRequest {
+    /**
+     * Checking that this is a valid number.
+     */
     return if (inputData.toIntOrNull() != null) {
-        if (inputData.toInt() <= 0) {
+        if (inputData.toIntOrNull()!! <= 0) {
             throw IncorrectInputDataForRequest("Incorrect number for request type 2! Expect a natural number.")
         }
         DataOfRequest("number", inputData)
     }
+    /**
+     * Checking that this is a correct word.
+     */
     else {
-        if (!inputData.matches(Regex("""([а-яА-Я-])"""))) {
+        if (!inputData.matches(Regex("""[а-яА-Я]([а-я-])[а-я]"""))) {
             throw IncorrectInputDataForRequest("Incorrect word for request type 2! Expect a word in Russian.")
         }
-        DataOfRequest("number", inputData)
+        DataOfRequest("word", inputData)
     }
 }
 
@@ -154,12 +176,12 @@ fun numberOrWord(inputData: String): DataOfRequest {
  */
 fun correctListOfWord(args: Array<String>): DataOfRequest {
     val words = args.toList().drop(2)
-    val isCorrectListOfWords = words.filterNot { it.matches(Regex("""([а-яА-Я-])""")) }.isEmpty()
+    val isCorrectListOfWords = words.filterNot { it.matches(Regex("""[а-яА-Я]([а-я-])[а-я]""")) }.isEmpty()
     if (!isCorrectListOfWords) {
         throw IncorrectInputDataForRequest("Incorrect group of words for request type 2! Expect words in Russian.")
     }
-    val wordsInString = words.reduce { current, next -> current + "" + next}
-    return DataOfRequest("list", wordsInString)
+    val wordsInString = words.joinToString(" ")
+    return DataOfRequest("group", wordsInString)
 }
 
 /**
@@ -190,6 +212,163 @@ fun createCorrectRequest(args: Array<String>): Request {
 }
 
 
+fun processingRequest(request: Request): String {                                         //add documentation
+    var index = Index()
+    val indexFile = nameOfIndexFile(request.filename)
+
+    if (!haveIndexFile(indexFile)) {
+        index = createIndex(request.filename)
+        makeIndexFileByIndex(index, indexFile)
+    }
+    else
+        index = makeIndexByIndexFile(indexFile)
+
+    when (request.typeOfRequest) {
+        2 -> return processingRequestTypeSecond(index, request.dataOfRequest!!)
+        3 -> return processingRequestTypeThird(index, request.dataOfRequest!!)
+    }
+    return ""
+}
+
+/**
+ * This function shows how file with text index for [textFileName] should look.
+ * @return path to index file
+ */
+fun nameOfIndexFile(textFileName: String): File {
+    val indexDir = File("indices/")
+    indexDir.mkdir()
+    val indexFileName = "$textFileName(index)"
+    val indexFile = File(indexDir, indexFileName)
+    return indexFile
+}
+
+/**
+ * This function checks if [textFileName] has file with text index.
+ */
+fun haveIndexFile(indexFile: File): Boolean {
+    return indexFile.exists()
+}
+
+fun createIndex(textFileName: String): Index {
+    val index = Index()
+    val odictCSVPath = "odict.csv"
+
+        Files.newBufferedReader(Paths.get(odictCSVPath), Charset.forName("Windows-1251")).use {
+                reader -> CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader()).use {
+                    csvParser -> for (csvRecord in csvParser) { }
+                }
+        }
+}
+
+/**
+ * This function writes the index to the index file.
+ * Each line contains one index element (a word and information elements about it, separated by commas with a space).
+ */
+fun makeIndexFileByIndex(index: Index, indexFile: File) {
+    index.forEach {
+        val word = it.key.toString()
+        val numberOfOccur = it.value.numberOfOccurrences.toString()
+        val usedWordForms = it.value.usedWordForms.joinToString(" ")
+        val pageNum = it.value.pageNumbers.joinToString(" ")
+        val linesNum = it.value.linesNumbers.joinToString(" ")
+
+        val line = "$word, $numberOfOccur, $usedWordForms, $pageNum, $linesNum"
+        indexFile.appendText(line)
+    }
+}
+
+/**
+ * This function reads the index from the file where it was previously written.
+ * A word and all information about it is read from each line.
+ * @return {Index} index
+ */
+fun makeIndexByIndexFile(indexFile: File): Index {
+    val index = Index()
+    indexFile.forEachLine {
+        val wordAndInfo = it.split(", ")
+        val word = wordAndInfo[0]
+
+        val numberOfOccurrences = wordAndInfo[1].toInt()
+        val usedWordForms = wordAndInfo[2].split(" ")
+        val pageNumbers = wordAndInfo[3].split(" ").map { it.toInt() }
+        val linesNumbers = wordAndInfo[4].split(" ").map { it.toInt() }
+
+        val info = InformationAboutWord(numberOfOccurrences, usedWordForms, pageNumbers, linesNumbers)
+        index[word] = info
+    }
+    return index
+}
+
+/**
+ * This function specifies which request for the second type of request should be processed.
+ * @return the result of processing the request as a string
+ */
+fun processingRequestTypeSecond(index: Index, dataOfRequest: DataOfRequest): String {
+    val (format, data) = dataOfRequest
+    when (format) {
+        "number" -> return resultOfNumberRequest(index, data)
+        "word" -> return resultOfWordRequest(index, data)
+        "group" -> return resultOfGroupRequest(index, data)
+    }
+    return ""
+}
+
+/**
+ * This function processes a request for a list of the specified number of most frequent words.
+ * @return the result of processing the request as a string
+ */
+fun resultOfNumberRequest(index: Index, data: String): String {
+    var number = data.toIntOrNull()!!
+    if (number < index.size) {
+        number = index.size
+    }
+    val commonWords = index.toList().sortedByDescending { it.second.numberOfOccurrences }.take(number)
+    val result = commonWords.joinToString(" ") { "$it.first" }
+    return result
+}
+
+/**
+ * This function processes a request for information about a given word.
+ * @return the result of processing the request as a string
+ */
+fun resultOfWordRequest(index: Index, word: String): String {
+    val searchedWordInfo = index[word]
+    return if (searchedWordInfo != null) {
+        val result = """Word: $word
+            |Number of occurrences: ${searchedWordInfo.numberOfOccurrences}
+            |Used word forms: ${searchedWordInfo.usedWordForms.joinToString(" ")}
+            |Page numbers: ${searchedWordInfo.pageNumbers.joinToString(" ")}
+        """.trimMargin()
+        result
+    }
+    else "Word $word was not found."
+}
+
+/**
+ * This function processes a request for information about each word of a given group of words.
+ * @return the result of processing the request as a string
+ */
+fun resultOfGroupRequest(index: Index, data: String): String {
+    val words = data.split(" ")
+    val result = words.joinToString("/n/n") { resultOfWordRequest(index, it) }
+    return result
+}
+
+/**
+ * This function processes a request of the third type to display all lines where a word occurs.
+ * @return the result of processing the request as a string
+ */
+fun processingRequestTypeThird(index: Index, dataOfRequest: DataOfRequest): String {
+    val (_, word) = dataOfRequest
+    val searchedWordInfo = index[word]
+    if (searchedWordInfo != null) {
+        val lines = searchedWordInfo.linesNumbers
+        //дописать
+    }
+    else return "Word $word was not found."
+}
+
+
 fun main(args: Array<String>) {
     val output = mutableListOf<String>()
     File("output.txt").delete()
@@ -197,7 +376,8 @@ fun main(args: Array<String>) {
 
     try {
         val request = createCorrectRequest(args)
-        //print(request)
+        val result = processingRequest(request)
+        output.add(result)
     }
     catch (e: Exception) {
         /**
@@ -211,23 +391,5 @@ fun main(args: Array<String>) {
 
 
 
-///**
-// * This function shows how file with text index for [filename] should look.
-// * @return path to index file
-// */
-//fun nameOfIndexFile(filename: String): File {
-//    val indexDir = File("indices/")
-//    indexDir.mkdir()
-//    val indexFileName = "index_$filename"
-//    val indexFile = File(indexDir, indexFileName)
-//    return indexFile
-//}
-//
-///**
-// * This function checks if [filename] has file with text index.
-// */
-//fun haveIndexFile(filename: String): Boolean {
-//    return nameOfIndexFile(filename).exists()
-//}
-//
+
 

@@ -17,6 +17,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "org.junit.jupiter:junit-jupiter:5.4.2"
     integTestImplementation "org.jetbrains.kotlin:kotlin-test:1.4.10"
+    compile 'com.opencsv:opencsv:5.2'
+    compile 'org.apache.commons:commons-csv:1.8'
 }
 
 sourceSets.main.kotlin.srcDirs = ['src/main']
