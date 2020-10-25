@@ -1,5 +1,3 @@
-@file:Suppress("UNREACHABLE_CODE")
-
 package program
 
 import org.apache.commons.csv.CSVFormat
@@ -241,7 +239,7 @@ fun createCorrectRequest(args: Array<String>): Request {
  */
 fun processingRequest(request: Request): String {
     val (textFileName, typeOfRequest, dataOfRequest) = request
-    val numberedTextFile = numberingTextFile(textFileName)
+    val numberedText = numberingTextFile(textFileName)
     val vocabulary = createVocabulary()
 
     var index = Index()
@@ -253,7 +251,7 @@ fun processingRequest(request: Request): String {
      * or creates a new one and writes to index file.
      */
     if (!haveIndexFile(indexFile)) {
-        index = createIndex(numberedTextFile, vocabulary)
+        index = createIndex(numberedText, vocabulary)
         makeIndexFileByIndex(index, indexFile)
     }
     else
@@ -265,30 +263,27 @@ fun processingRequest(request: Request): String {
     return when (typeOfRequest) {
         TypeOfRequest.FIRST -> "The index is built."
         TypeOfRequest.SECOND -> processingRequestTypeSecond(index, dataOfRequest!!)
-        TypeOfRequest.THIRD -> processingRequestTypeThird(index, dataOfRequest!!.data, numberedTextFile)
+        TypeOfRequest.THIRD -> processingRequestTypeThird(index, dataOfRequest!!.data, numberedText)
     }
-    numberedTextFile.delete()
 }
 
 /**
  * This function indexes the lines of a text file, excluding empty ones,
- * and writes them to a new file, adding its number and page number before the line.
+ * and writes them to list, adding its number and page number before the line.
  * @return text file without empty lines and with (index,page) before every line.
  */
-fun numberingTextFile(textFileName: String): File {
-    val textFileWithNumberingName = textFileName.dropLast(4) + "_num.txt"
-    val textFileWithNumbering = File(textFileWithNumberingName)
-
+fun numberingTextFile(textFileName: String): List<String> {
+    val numberedText = mutableListOf<String>()
     val textFile = File(textFileName)
     textFile.useLines { lines -> lines.filterNot { it.isEmpty() }.forEachIndexed {
             index, line ->
         run {
             val page = (index - index % 45) / 45
-            textFileWithNumbering.appendText("($index,$page) $line")
+            numberedText.add("($index,$page) $line")
         }
     }
     }
-    return textFileWithNumbering
+    return numberedText.toList()
 }
 
 /**
@@ -355,10 +350,10 @@ fun haveIndexFile(indexFile: File): Boolean {
  * This function builds the file index.
  * Each line is separated by spaces into an array of words that are added to the dictionary.
  */
-fun createIndex(numberedTextFile: File, vocabulary: Vocabulary): Index {
+fun createIndex(numberedText: List<String>, vocabulary: Vocabulary): Index {
     val index = Index()
 
-    numberedTextFile.useLines { lines -> lines.forEach {
+    numberedText.forEach {
         val words = it.split(" ")
 
         /**
@@ -369,7 +364,6 @@ fun createIndex(numberedTextFile: File, vocabulary: Vocabulary): Index {
         words.map { onlyWord(it) }.forEach {
             word -> addWordToIndex(index, word, vocabulary, lineNumber, pageNumber)
         }
-    }
     }
     return index
 }
@@ -517,11 +511,11 @@ fun resultOfGroupRequest(index: Index, data: String): String {
  * This function processes a request of the third type to display all lines where a word occurs.
  * @return the result of processing the request as a string
  */
-fun processingRequestTypeThird(index: Index, word: String, numberedTextFile: File): String {
+fun processingRequestTypeThird(index: Index, word: String, numberedText: List<String>): String {
     val searchedWordInfo = index[word]
     return if (searchedWordInfo != null) {
         val linesNumbers = searchedWordInfo.linesNumbers
-        val result = linesNumbers.joinToString("/n/n") { lineByNumber(it, numberedTextFile) }
+        val result = linesNumbers.joinToString("/n/n") { lineByNumber(it, numberedText) }
         result
     }
     else {
@@ -533,14 +527,13 @@ fun processingRequestTypeThird(index: Index, word: String, numberedTextFile: Fil
 /**
  * This function finds a string by its number in a text file and returns it.
  */
-fun lineByNumber(lineNumber: Int, numberedTextFile: File): String {
-    numberedTextFile.useLines { lines -> lines.forEach {
+fun lineByNumber(lineNumber: Int, numberedText: List<String>): String {
+    numberedText.forEach {
         val thisLineNumber = it.drop(1).substringBefore(",").toInt()
         if (lineNumber == thisLineNumber) {
             val line = it.substringAfter(") ")
             return line
         }
-    }
     }
     return ""
 }
