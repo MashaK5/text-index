@@ -71,9 +71,14 @@ Text files consist of lines, lines are collected into pages
     **Output**: lines containing the specified word, separated by blank lines.
 
    
-   
 #### Example
 ````bash
+$ ./gradlew run --args="data/MyText.txt 2 плакать"
+
+Word: плакать
+Number of occurrences: 1
+Used word forms: плакать
+Page numbers: 1
 
 ````
 

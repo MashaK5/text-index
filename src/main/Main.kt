@@ -116,6 +116,7 @@ fun createVocabulary(): Vocabulary {
 
             val oneWordForms = mutableListOf<Word>()
             line.forEach { oneWordForms.add(it) }
+
             /**
              * [oneWordForms[0]] is word
              * [oneWordForms[1]] is type of word
@@ -127,6 +128,10 @@ fun createVocabulary(): Vocabulary {
             }
         }
     }
+    vocabulary.remove("")
+    vocabulary.remove("с")
+    vocabulary.remove("м")
+
     return vocabulary
 }
 

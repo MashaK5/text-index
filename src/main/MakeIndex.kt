@@ -53,16 +53,17 @@ fun createIndex(numberedText: List<String>, vocabulary: Vocabulary): Index {
 
     numberedText.forEach {
         val words = it.split(" ")
-
         /**
          * The line looks like: (line,page) ...
          */
         val lineNumber = words[0].drop(1).substringBefore(",").toInt()
         val pageNumber = words[0].dropLast(1).substringAfter(",").toInt()
+
         words.map { onlyWord(it) }.forEach {
-                word -> addWordToIndex(index, word, vocabulary, lineNumber, pageNumber)
+            addWordToIndex(index, it, vocabulary, lineNumber, pageNumber)
         }
     }
+
     return index
 }
 
