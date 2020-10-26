@@ -159,7 +159,7 @@ fun makeIndexFileByIndex(index: Index, indexFile: File) {
         val linesNum = it.value.linesNumbers.joinToString(" ")
 
         val line = "$word, $numberOfOccur, $usedWordForms, $pageNum, $linesNum"
-        indexFile.appendText(line)
+        indexFile.appendText("$line\n")
     }
 }
 

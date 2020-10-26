@@ -1,7 +1,5 @@
 package program
 
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVParser
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Files
@@ -113,19 +111,21 @@ fun createVocabulary(): Vocabulary {
     val odictCSVPath = "odict.csv"
 
     Files.newBufferedReader(Paths.get(odictCSVPath), Charset.forName("Windows-1251")).use {
-            line -> CSVParser(line, CSVFormat.DEFAULT).use {
-                val oneWordForms = mutableListOf<Word>()
-                it.forEach { oneWordForms.add(it.toString()) }
+        it.forEachLine {
+            val line = it.split(",")
 
-                /**
-                 * [oneWordForms[0]] is word
-                 * [oneWordForms[1]] is type of word
-                 * the rest of the list elements are word forms
-                 */
-                if (isNotServiceWord(oneWordForms[1], oneWordForms[0])) {
-                    oneWordForms.forEach { vocabulary[it] = oneWordForms[0] }
-                }
+            val oneWordForms = mutableListOf<Word>()
+            line.forEach { oneWordForms.add(it) }
+            /**
+             * [oneWordForms[0]] is word
+             * [oneWordForms[1]] is type of word
+             * the rest of the list elements are word forms
+             */
+            if (isNotServiceWord(oneWordForms[1], oneWordForms[0])) {
+                oneWordForms.forEach { vocabulary[it] = oneWordForms[0] }
+
             }
+        }
     }
     return vocabulary
 }
