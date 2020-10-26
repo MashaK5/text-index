@@ -29,14 +29,14 @@ Text files consist of lines, lines are collected into pages
         
     * complete information about the use of a given word
     (number of occurrences, used word forms, page numbers)  
-        **Correct input data**: one word in Russian  
+        **Correct input data**: one word in Russian in initial form
         
     * data on the use of words from a given group
     (for example, pieces of furniture, verbs of movement, etc.).  
-        **Correct input data**: several words in Russian, separated by spaces   
+        **Correct input data**: several words in Russian in initial form, separated by spaces   
          
 3. Displays all lines containing the specified word (in any of the word forms).  
-    **Correct input data**: one word in Russian
+    **Correct input data**: one word in Russian in initial form
 
 #### Output (displayed on the screen)
 
@@ -50,7 +50,9 @@ Text files consist of lines, lines are collected into pages
         If the number of different words in the text is less than the specified number, all words will be displayed. 
         
     * complete information about the use of a given word
-    (number of occurrences, used word forms, page numbers)  
+    (number of occurrences, used word forms, page numbers)   
+    **Word in initial form!**  
+ 
         **Output**: 
         > Word:  
         Number of occurrences:  
@@ -65,6 +67,7 @@ Text files consist of lines, lines are collected into pages
         Blocks are separated by blank lines.
                  
 3. Displays all lines containing the specified word (in any of the word forms).  
+**Word in initial form!**  
     **Output**: lines containing the specified word, separated by blank lines.
 
    

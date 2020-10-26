@@ -31,11 +31,11 @@ fun processingRequestTypeSecond(index: Index, dataOfRequest: DataOfRequest): Str
  */
 fun resultOfNumberRequest(index: Index, data: String): String {
     var number = data.toIntOrNull()!!
-    if (number < index.size) {
+    if (number > index.size) {
         number = index.size
     }
-    val commonWords = index.toList().sortedByDescending { it.second.numberOfOccurrences }.take(number)
-    val result = commonWords.joinToString(", ") { "$it.first" }
+    val sortedIndex = index.toList().sortedByDescending { it.second.numberOfOccurrences }
+    val result = sortedIndex.take(number).joinToString(", ") { it.first }
     return result
 }
 
@@ -46,10 +46,11 @@ fun resultOfNumberRequest(index: Index, data: String): String {
 fun resultOfWordRequest(index: Index, word: String): String {
     val searchedWordInfo = index[word]
     return if (searchedWordInfo != null) {
-        val result = """Word: $word
+        val result = """
+            |Word: $word
             |Number of occurrences: ${searchedWordInfo.numberOfOccurrences}
-            |Used word forms: ${searchedWordInfo.usedWordForms.joinToString(" ")}
-            |Page numbers: ${searchedWordInfo.pageNumbers.joinToString(" ")}
+            |Used word forms: ${searchedWordInfo.usedWordForms.joinToString(", ")}
+            |Page numbers: ${searchedWordInfo.pageNumbers.joinToString(", ")}
         """.trimMargin()
         result
     }
@@ -62,7 +63,7 @@ fun resultOfWordRequest(index: Index, word: String): String {
  */
 fun resultOfGroupRequest(index: Index, data: String): String {
     val words = data.split(" ")
-    val result = words.joinToString("/n/n/n") { resultOfWordRequest(index, it) }
+    val result = words.joinToString("\n\n\n") { resultOfWordRequest(index, it) }
     return result
 }
 
@@ -74,7 +75,7 @@ fun processingRequestTypeThird(index: Index, word: String, numberedText: List<St
     val searchedWordInfo = index[word]
     return if (searchedWordInfo != null) {
         val linesNumbers = searchedWordInfo.linesNumbers
-        val result = linesNumbers.joinToString("/n/n") { lineByNumber(it, numberedText) }
+        val result = linesNumbers.joinToString("\n\n") { lineByNumber(it, numberedText) }
         result
     }
     else {

@@ -5,6 +5,74 @@ import org.junit.jupiter.api.Test
 import program.*
 import java.io.File
 
+val vocabulary = hashMapOf<Word, Word>(
+    "облака" to "облако", "облаке" to "облако", "облаку" to "облако",
+    "мимо" to "мимо", "белого" to "белый", "яблока" to "яблоко",
+    "неведомой" to "неведомый", "страны" to "страна", "лететь" to "летать",
+    "белые" to "белый", "яблоки" to "яблоко", "летать" to "летать",
+)
+
+val numberedText = listOf(
+    "(1,1) Белого облака!",
+    "(2,1) белого яблока",
+    "(3,1) лететь, Летать на облаке",
+)
+
+val index = hashMapOf(
+        "белый" to InformationAboutWord(
+            2,
+            mutableSetOf("белого"),
+            mutableListOf(1),
+            mutableListOf(1, 2)
+        ),
+        "облако" to InformationAboutWord(
+            2,
+            mutableSetOf("облака", "облаке"),
+            mutableListOf(1),
+            mutableListOf(1, 3)
+        ),
+        "яблоко" to InformationAboutWord(
+            1,
+            mutableSetOf("яблока"),
+            mutableListOf(1),
+            mutableListOf(2)
+        ),
+        "летать" to InformationAboutWord(
+            2,
+            mutableSetOf("лететь", "летать"),
+            mutableListOf(1),
+            mutableListOf(3)
+        )
+)
+
+val indexWithWordsWithDiffOccurs = hashMapOf(
+        "белый" to InformationAboutWord(
+                3,
+                mutableSetOf("белого"),
+                mutableListOf(1),
+                mutableListOf(1, 2)
+        ),
+        "облако" to InformationAboutWord(
+                2,
+                mutableSetOf("облака", "облаке"),
+                mutableListOf(1),
+                mutableListOf(1, 3)
+        ),
+        "яблоко" to InformationAboutWord(
+                5,
+                mutableSetOf("яблока"),
+                mutableListOf(1),
+                mutableListOf(2)
+        ),
+        "летать" to InformationAboutWord(
+                1,
+                mutableSetOf("лететь", "летать"),
+                mutableListOf(1),
+                mutableListOf(3)
+        )
+)
+
+
 internal class NumberingTextFile {
 
     @Test
