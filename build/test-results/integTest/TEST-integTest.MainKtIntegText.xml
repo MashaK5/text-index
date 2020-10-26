@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="integTest.MainKtIntegText" tests="9" skipped="0" failures="0" errors="0" timestamp="2020-10-26T06:29:17" hostname="maria-TM1701" time="27.633">
+  <properties/>
+  <testcase name="first request()" classname="integTest.MainKtIntegText" time="6.125"/>
+  <testcase name="incor data()" classname="integTest.MainKtIntegText" time="0.002"/>
+  <testcase name="incor type()" classname="integTest.MainKtIntegText" time="0.001"/>
+  <testcase name="incor filename()" classname="integTest.MainKtIntegText" time="0.001"/>
+  <testcase name="second request with group()" classname="integTest.MainKtIntegText" time="5.389"/>
+  <testcase name="second request with word()" classname="integTest.MainKtIntegText" time="5.676"/>
+  <testcase name="few args()" classname="integTest.MainKtIntegText" time="0.001"/>
+  <testcase name="third request()" classname="integTest.MainKtIntegText" time="5.17"/>
+  <testcase name="second request with number()" classname="integTest.MainKtIntegText" time="5.266"/>
+  <system-out><![CDATA[The index is built.
+The index is built.
+The index is built.
+program.IncorrectInputDataForRequest: Wrong amount of arguments after filename and type of request for request type 3!
+program.IncorrectTypeOfRequest: Incorrect type of request! Expect one number from 1 to 3.
+program.IncorrectFilenameFormat: Incorrect filename format! Too small string.
+Word пони was not found.
+
+
+Word строка was not found.
+Word пони was not found.
+
+
+Word: строка
+Number of occurrences: 2
+Used word forms: строка, строк
+Page numbers: 1
+Word: пони
+Number of occurrences: 7
+Used word forms: пони
+Page numbers: 1, 2
+
+
+Word строка was not found.
+Word пони was not found.
+Word пони was not found.
+Word: пони
+Number of occurrences: 7
+Used word forms: пони
+Page numbers: 1, 2
+program.IncorrectNumberOfArgs: Too few arguments! Expect at least two arguments: filename and type of request.
+Word пони was not found.
+Word пони was not found.
+И скачет пони
+
+У пони длинная чёлка
+
+А пони довезёт за полчаса.
+
+А пони довезёт за полчаса..
+
+У пони длинная челка
+
+На пони катался,
+
+А пони так легко обнять руками,
+
+строка, как, мочь, получиться
+такой, пони, как, обнять
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

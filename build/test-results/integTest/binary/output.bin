@@ -1,0 +1,52 @@
+The index is built.
+The index is built.
+The index is built.
+wprogram.IncorrectInputDataForRequest: Wrong amount of arguments after filename and type of request for request type 3!
+Zprogram.IncorrectTypeOfRequest: Incorrect type of request! Expect one number from 1 to 3.
+Nprogram.IncorrectFilenameFormat: Incorrect filename format! Too small string.
+Word пони was not found.
+
+
+!Word строка was not found.
+Word пони was not found.
+
+
+Word: строка
+Number of occurrences: 2
+*Used word forms: строка, строк
+Page numbers: 1
+Word: пони
+Number of occurrences: 7
+Used word forms: пони
+Page numbers: 1, 2
+
+
+!Word строка was not found.
+Word пони was not found.
+Word пони was not found.
+Word: пони
+Number of occurrences: 7
+Used word forms: пони
+Page numbers: 1, 2
+oprogram.IncorrectNumberOfArgs: Too few arguments! Expect at least two arguments: filename and type of request.
+	Word пони was not found.
+	Word пони was not found.
+	И скачет пони
+	
+	&У пони длинная чёлка
+	
+	0А пони довезёт за полчаса.
+	
+	1А пони довезёт за полчаса..
+	
+	&У пони длинная челка
+	
+	На пони катался,
+	
+	9А пони так легко обнять руками,
+
+
+
+5строка, как, мочь, получиться
+
++такой, пони, как, обнять
