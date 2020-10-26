@@ -124,21 +124,21 @@ internal class MainForm {
 
     @Test
     fun `wordLow`() {
-        val expected = "облако"
+        val expected = Pair("облаке", "облако")
         val actual = mainForm("облаке", vocabulary)
         assertEquals(expected, actual)
     }
 
     @Test
     fun `wordUp`() {
-        val expected = "облако"
+        val expected = Pair("облака", "облако")
         val actual = mainForm("Облака", vocabulary)
         assertEquals(expected, actual)
     }
 
     @Test
     fun `not word`() {
-        val expected = ""
+        val expected = Pair("Пппп", "")
         val actual = mainForm("Пппп", vocabulary)
         assertEquals(expected, actual)
     }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="unitTest.ProcessingRequestTypeSecond" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-10-26T05:35:15" hostname="maria-TM1701" time="0.049">
+  <properties/>
+  <testcase name="number()" classname="unitTest.ProcessingRequestTypeSecond" time="0.046"/>
+  <testcase name="word()" classname="unitTest.ProcessingRequestTypeSecond" time="0.001"/>
+  <testcase name="group()" classname="unitTest.ProcessingRequestTypeSecond" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

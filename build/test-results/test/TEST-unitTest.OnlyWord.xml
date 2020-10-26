@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="unitTest.OnlyWord" tests="4" skipped="0" failures="0" errors="0" timestamp="2020-10-26T05:35:15" hostname="maria-TM1701" time="0.003">
+  <properties/>
+  <testcase name="word with punctuation marks before()" classname="unitTest.OnlyWord" time="0.001"/>
+  <testcase name="word with punctuation marks after and before()" classname="unitTest.OnlyWord" time="0.001"/>
+  <testcase name="word without punctuation marks()" classname="unitTest.OnlyWord" time="0.0"/>
+  <testcase name="word with punctuation marks after()" classname="unitTest.OnlyWord" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -10,7 +10,6 @@ internal class ProcessingRequest {
     @Test
     fun `first`() {
         val request = Request("data/Cloud.txt", TypeOfRequest.FIRST, null)
-        val (_, typeOfRequest, dataOfRequest) = request
         val expected = "The index is built."
         val actual = processingRequest(index, numberedText, request )
         assertEquals(expected, actual)
@@ -20,8 +19,7 @@ internal class ProcessingRequest {
     fun `second`() {
         val data = DataOfRequest(Format.NUMBER, "2")
         val request = Request("data/Cloud.txt", TypeOfRequest.SECOND, data)
-        val (_, typeOfRequest, dataOfRequest) = request
-        val expected = processingRequestTypeSecond(index, dataOfRequest!!)
+        val expected = processingRequestTypeSecond(index, data)
         val actual = processingRequest(index, numberedText, request )
         assertEquals(expected, actual)
     }
@@ -30,8 +28,7 @@ internal class ProcessingRequest {
     fun `third`() {
         val data = DataOfRequest(Format.WORD, "облако")
         val request = Request("data/Cloud.txt", TypeOfRequest.THIRD, data)
-        val (_, typeOfRequest, dataOfRequest) = request
-        val expected = processingRequestTypeThird(index, dataOfRequest!!.data, numberedText)
+        val expected = processingRequestTypeThird(index, data.data, numberedText)
         val actual = processingRequest(index, numberedText, request )
         assertEquals(expected, actual)
     }

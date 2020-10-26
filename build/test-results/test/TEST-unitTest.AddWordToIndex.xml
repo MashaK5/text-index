@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="unitTest.AddWordToIndex" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-10-26T05:35:15" hostname="maria-TM1701" time="0.005">
+  <properties/>
+  <testcase name="old word()" classname="unitTest.AddWordToIndex" time="0.003"/>
+  <testcase name="new word()" classname="unitTest.AddWordToIndex" time="0.001"/>
+  <testcase name="not word()" classname="unitTest.AddWordToIndex" time="0.001"/>
+  <system-out><![CDATA[{облако=InformationAboutWord(numberOfOccurrences=2, usedWordForms=[облака, облаке], pageNumbers=[1], linesNumbers=[1, 3]), летать=InformationAboutWord(numberOfOccurrences=2, usedWordForms=[лететь, летать], pageNumbers=[1], linesNumbers=[3]), белый=InformationAboutWord(numberOfOccurrences=2, usedWordForms=[белого], pageNumbers=[1], linesNumbers=[1, 2]), яблоко=InformationAboutWord(numberOfOccurrences=1, usedWordForms=[яблока], pageNumbers=[1], linesNumbers=[2])}
+{облако=InformationAboutWord(numberOfOccurrences=2, usedWordForms=[облака, облаке], pageNumbers=[1], linesNumbers=[1, 3]), летать=InformationAboutWord(numberOfOccurrences=2, usedWordForms=[лететь, летать], pageNumbers=[1], linesNumbers=[3]), белый=InformationAboutWord(numberOfOccurrences=2, usedWordForms=[белого], pageNumbers=[1], linesNumbers=[1, 2]), яблоко=InformationAboutWord(numberOfOccurrences=1, usedWordForms=[яблока], pageNumbers=[1], linesNumbers=[2])}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

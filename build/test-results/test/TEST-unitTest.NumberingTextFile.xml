@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="unitTest.NumberingTextFile" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-10-26T05:35:15" hostname="maria-TM1701" time="0.007">
+  <properties/>
+  <testcase name="file with empty line()" classname="unitTest.NumberingTextFile" time="0.004"/>
+  <testcase name="empty file()" classname="unitTest.NumberingTextFile" time="0.001"/>
+  <testcase name="file without empty line()" classname="unitTest.NumberingTextFile" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

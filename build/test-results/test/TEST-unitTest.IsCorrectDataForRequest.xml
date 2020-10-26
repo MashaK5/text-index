@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="unitTest.IsCorrectDataForRequest" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-10-26T05:35:15" hostname="maria-TM1701" time="0.002">
+  <properties/>
+  <testcase name="second()" classname="unitTest.IsCorrectDataForRequest" time="0.001"/>
+  <testcase name="first()" classname="unitTest.IsCorrectDataForRequest" time="0.0"/>
+  <testcase name="third()" classname="unitTest.IsCorrectDataForRequest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

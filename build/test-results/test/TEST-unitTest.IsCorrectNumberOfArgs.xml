@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="unitTest.IsCorrectNumberOfArgs" tests="3" skipped="0" failures="0" errors="0" timestamp="2020-10-26T05:35:15" hostname="maria-TM1701" time="0.004">
+  <properties/>
+  <testcase name="one arg()" classname="unitTest.IsCorrectNumberOfArgs" time="0.001"/>
+  <testcase name="two arg()" classname="unitTest.IsCorrectNumberOfArgs" time="0.002"/>
+  <testcase name="empty array()" classname="unitTest.IsCorrectNumberOfArgs" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
