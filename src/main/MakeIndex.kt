@@ -27,12 +27,12 @@ fun makeIndex(numberedText: List<String>, vocabulary: Vocabulary, textFileName: 
 
 /**
  * This function shows how file with text index for [textFileName] should look.
- * @return path to index file
+ * @return index file
  */
 fun createIndexFile(textFileName: String): File {
     val indexDir = File("indices/")
     indexDir.mkdir()
-    val indexFileName = "$textFileName(index)"
+    val indexFileName = textFileName.substringAfterLast("/")
     val indexFile = File(indexDir, indexFileName)
     return indexFile
 }
@@ -71,10 +71,14 @@ fun createIndex(numberedText: List<String>, vocabulary: Vocabulary): Index {
  * that may have remained around it after being separated by spaces.
  */
 fun onlyWord(wordWithPunctuationMarks: String): Word {
-    val notRussianLetter = Regex("""([^a-zA-Z])""")
-    val word = wordWithPunctuationMarks
-        .substringAfter("$notRussianLetter")
-        .substringBeforeLast("$notRussianLetter")
+    val notRussianLetter = Regex("""[^а-яА-Я-ёЁ]""")
+    var word = notRussianLetter.replace(wordWithPunctuationMarks, "")
+    if (word.take(1) == "-") {
+        word = word.drop(1)
+    }
+    if (word.takeLast(1) == "-") {
+        word = word.dropLast(1)
+    }
     return word
 }
 
@@ -82,33 +86,63 @@ fun onlyWord(wordWithPunctuationMarks: String): Word {
  * This function adds a word to the index or updates the data for it if it is already in the index.
  */
 fun addWordToIndex(index: Index, wordFromText: Word, vocabulary: Vocabulary, line:Int, page: Int): Index {
-    val mainWordFord = vocabulary[wordFromText]
-    if (mainWordFord != null) {
-        /**
-         * If the word is in the vocabulary, see if its main form has been added to the index.
-         */
-        val info = index[mainWordFord]
+    val (wordFromTextRight, mainForm) = mainForm(wordFromText, vocabulary)
+
+    if (mainForm != "") {
+        val info = index[mainForm]
         if (info == null) {
-            index[mainWordFord] = InformationAboutWord(
+            index[mainForm] = InformationAboutWord(
                 1,
-                mutableListOf(wordFromText),
+                mutableSetOf(wordFromTextRight),
                 mutableListOf(page),
                 mutableListOf(line)
             )
         }
         else {
-            val (number, wordForms, pages, lines) = info
-            wordForms.add(wordFromText)
-            pages.add(page)
-            listOf(line)
-            index[mainWordFord] = InformationAboutWord(
-                number + 1,
-                wordForms,
-                pages,
-                lines
-            )
+            updateInfoAboutWord(index, wordFromTextRight, mainForm, page, line)
         }
     }
+    return index
+}
+
+/**
+ * This function determines the basic form of a word, even if the word is at the beginning of a sentence.
+ */
+fun mainForm(wordFromText: Word, vocabulary: Vocabulary): Pair<Word, String> {
+    val mainWordForm = vocabulary[wordFromText]
+    val mainFormWordInBeginOfLine = vocabulary[wordFromText.toLowerCase()]
+
+    var wordFromTextRight = wordFromText
+    var mainForm = ""
+    if (mainWordForm != null){
+        mainForm = mainWordForm
+    }
+    if (mainFormWordInBeginOfLine != null) {
+        mainForm = mainFormWordInBeginOfLine
+        wordFromTextRight = wordFromText.toLowerCase()
+    }
+    return Pair(wordFromTextRight, mainForm)
+}
+
+/**
+ * This function updates information about a word in the index, if it is already there.
+ */
+fun updateInfoAboutWord(index: Index, wordFromText: Word, mainForm: String, page: Int, line: Int): Index {
+    val (number, wordForms, pages, lines) = index[mainForm]!!
+    wordForms.add(wordFromText)
+    if (pages.firstOrNull {it == page} == null) {
+        pages.add(page)
+    }
+    if (lines.firstOrNull {it == line} == null) {
+        lines.add(line)
+    }
+
+    index[mainForm] = InformationAboutWord(
+        number + 1,
+        wordForms,
+        pages,
+        lines
+    )
     return index
 }
 
@@ -138,10 +172,10 @@ fun makeIndexByIndexFile(indexFile: File): Index {
     val index = Index()
     indexFile.forEachLine {
         val wordAndInfo = it.split(", ")
-        val word = wordAndInfo[0]
 
+        val word = wordAndInfo[0]
         val numberOfOccurrences = wordAndInfo[1].toInt()
-        val usedWordForms = wordAndInfo[2].split(" ").toMutableList()
+        val usedWordForms = wordAndInfo[2].split(" ").toMutableSet()
         val pageNumbers = wordAndInfo[3].split(" ").map { it.toInt() }.toMutableList()
         val linesNumbers = wordAndInfo[4].split(" ").map { it.toInt() }.toMutableList()
 

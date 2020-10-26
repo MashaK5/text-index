@@ -3,5 +3,202 @@ package unitTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import program.*
+import java.io.File
 
 
+val vocabulary = hashMapOf<Word, Word>(
+    "облака" to "облако", "облаке" to "облако", "облаку" to "облако",
+    "мимо" to "мимо", "белого" to "белый", "яблока" to "яблоко",
+    "неведомой" to "неведомый", "страны" to "страна", "лететь" to "летать",
+    "белые" to "белый", "яблоки" to "яблоко", "летать" to "летать",
+)
+
+val numberedText = listOf(
+    "(1,1) Белого облака!",
+    "(2,1) белого яблока",
+    "(3,1) лететь, Летать на облаке",
+)
+
+val index = hashMapOf(
+    "белый" to InformationAboutWord(
+        2,
+        mutableSetOf("белого"),
+        mutableListOf(1),
+        mutableListOf(1, 2)
+    ),
+    "облако" to InformationAboutWord(
+        2,
+        mutableSetOf("облака", "облаке"),
+        mutableListOf(1),
+        mutableListOf(1, 3)
+    ),
+    "яблоко" to InformationAboutWord(
+        1,
+        mutableSetOf("яблока"),
+        mutableListOf(1),
+        mutableListOf(2)
+    ),
+    "летать" to InformationAboutWord(
+        2,
+        mutableSetOf("лететь", "летать"),
+        mutableListOf(1),
+        mutableListOf(3)
+    )
+)
+
+internal class CreateIndexFile {
+
+    @Test
+    fun `index file`() {
+        val textFileName = "data/MyText.txt"
+        val expected = File("indices/MyText.txt")
+        val actual = createIndexFile(textFileName)
+        assertEquals(expected, actual)
+    }
+}
+
+internal class HaveIndexFile {
+
+    @Test
+    fun `have`() {
+        val textFileName = File("indices/HaveIndexFile.txt")
+        val expected = true
+        val actual = haveIndexFile(textFileName)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `not have`() {
+        val textFileName = File("indices/NotHaveIndexFile.txt")
+        val expected = false
+        val actual = haveIndexFile(textFileName)
+        assertEquals(expected, actual)
+    }
+}
+
+internal class CreateIndex {
+
+    @Test
+    fun `clouds`() {
+        val expected = index
+        val actual = createIndex(numberedText, vocabulary)
+        assertEquals(expected, actual)
+    }
+
+}
+
+internal class OnlyWord {
+
+    @Test
+    fun `word without punctuation marks`() {
+        val word = "Конёк-Горбунок"
+        val expected = "Конёк-Горбунок"
+        val actual = onlyWord(word)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `word with punctuation marks after`() {
+        val word = "Конёк-Горбунок,"
+        val expected = "Конёк-Горбунок"
+        val actual = onlyWord(word)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `word with punctuation marks before`() {
+        val word = "(((Конёк-Горбунок"
+        val expected = "Конёк-Горбунок"
+        val actual = onlyWord(word)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `word with punctuation marks after and before`() {
+        val word = "(Конёк-Горбунок!.."
+        val expected = "Конёк-Горбунок"
+        val actual = onlyWord(word)
+        assertEquals(expected, actual)
+    }
+}
+
+internal class AddWordToIndex {
+
+    @Test
+    fun `new word`() {
+        val indexWithoutRecord = hashMapOf<Word, InformationAboutWord>()
+        indexWithoutRecord.putAll(index)
+        indexWithoutRecord.remove("яблоко")
+        val expected = index
+        val actual = addWordToIndex(indexWithoutRecord, "яблока", vocabulary, 2, 1)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `not word`() {
+        val expected = index
+        val actual = addWordToIndex(index, "яблокааааа", vocabulary, 3, 1)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `old word`() {
+        val indexWithoutRecord = hashMapOf<Word, InformationAboutWord>()
+        indexWithoutRecord.putAll(index)
+        indexWithoutRecord.remove("облако")
+        indexWithoutRecord["облако"] = InformationAboutWord(
+            1,
+            mutableSetOf("облака"),
+            mutableListOf(1),
+            mutableListOf(1)
+        )
+        val expected = index
+        val actual = addWordToIndex(indexWithoutRecord, "облаке", vocabulary, 3, 1)
+        println(expected)
+        println(actual)
+        assertEquals(expected, actual)
+    }
+}
+
+internal class MainForm {
+
+    @Test
+    fun `wordLow`() {
+        val expected = "облако"
+        val actual = mainForm("облаке", vocabulary)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `wordUp`() {
+        val expected = "облако"
+        val actual = mainForm("Облака", vocabulary)
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `not word`() {
+        val expected = ""
+        val actual = mainForm("Пппп", vocabulary)
+        assertEquals(expected, actual)
+    }
+}
+
+internal class UpdateInfoAboutWord {
+
+    @Test
+    fun `small example`() {
+        val indexWithoutRecord = hashMapOf<Word, InformationAboutWord>()
+        indexWithoutRecord.putAll(index)
+        indexWithoutRecord.remove("облако")
+        indexWithoutRecord["облако"] = InformationAboutWord(
+            1,
+            mutableSetOf("облака"),
+            mutableListOf(1),
+            mutableListOf(1)
+        )
+        val expected = index
+        val actual = updateInfoAboutWord(indexWithoutRecord, "облаке", "облако", 1, 3)
+        assertEquals(expected, actual)
+    }
+}

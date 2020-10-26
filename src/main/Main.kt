@@ -44,7 +44,7 @@ enum class Format {
  */
 data class InformationAboutWord(
     val numberOfOccurrences: Int,
-    val usedWordForms:MutableList<String>,
+    val usedWordForms:MutableSet<String>,
     val pageNumbers: MutableList<Int>,
     val linesNumbers: MutableList<Int>
 )
@@ -94,8 +94,9 @@ fun numberingTextFile(textFileName: String): List<String> {
     textFile.useLines { lines -> lines.filterNot { it.isEmpty() }.forEachIndexed {
             index, line ->
         run {
-            val page = (index - index % 45) / 45
-            numberedText.add("($index,$page) $line")
+            val lineNum = index + 1
+            val pageNum = (index - index % 45) / 45 + 1
+            numberedText.add("($lineNum,$pageNum) $line")
         }
     }
     }
@@ -121,7 +122,7 @@ fun createVocabulary(): Vocabulary {
                  * [oneWordForms[1]] is type of word
                  * the rest of the list elements are word forms
                  */
-                if (isNotServiceWord(oneWordForms[1])) {
+                if (isNotServiceWord(oneWordForms[1], oneWordForms[0])) {
                     oneWordForms.forEach { vocabulary[it] = oneWordForms[0] }
                 }
             }
@@ -132,8 +133,8 @@ fun createVocabulary(): Vocabulary {
 /**
  * This function checks that a word is not a preposition, union, particle, or interjection.
  */
-fun isNotServiceWord(word: String): Boolean {
-    when (word) {
+fun isNotServiceWord(type: String, word: String): Boolean {
+    when (type) {
         "част." -> return false
         "межд." -> return false
         "союз" -> return false

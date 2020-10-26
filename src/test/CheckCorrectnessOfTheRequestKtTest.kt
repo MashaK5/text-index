@@ -5,6 +5,17 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import program.*
 
+internal class CreateCorrectRequest {
+
+    @Test
+    fun `just correct args`() {
+        val args = arrayOf("data/Read.txt", "2", "слово", "второе")
+        val inputData = DataOfRequest(Format.GROUP, "слово второе")
+        val expected = Request("data/Read.txt", TypeOfRequest.SECOND, inputData)
+        val actual = createCorrectRequest(args)
+        assertEquals(expected, actual)
+    }
+}
 
 internal class IsCorrectNumberOfArgs {
 
@@ -37,7 +48,6 @@ internal class IsCorrectNumberOfArgs {
     }
 }
 
-
 internal class IsCorrectFilename {
 
     @Test
@@ -68,7 +78,6 @@ internal class IsCorrectFilename {
         assertEquals(expected, actual)
     }
 }
-
 
 internal class IsCorrectTypeOfRequest {
 

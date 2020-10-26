@@ -136,9 +136,9 @@ fun numberOrWord(inputData: String): DataOfRequest {
  */
 fun isRussianWord(word: Word): Boolean {
     return when (word.length) {
-        1 -> word.matches(Regex("""[а-яА-Я]"""))
-        2 -> word.matches(Regex("""[а-яА-Я][а-яА-Я]"""))
-        else -> word.matches(Regex("""[а-яА-Я][а-яА-Я-]*[а-яА-Я]"""))
+        1 -> word.matches(Regex("""[а-яА-ЯёЁ]"""))
+        2 -> word.matches(Regex("""[а-яА-ЯёЁ][а-яА-ЯёЁ]"""))
+        else -> word.matches(Regex("""[а-яА-ЯёЁ][а-яА-Я-ёЁ]*[а-яА-ЯёЁ]"""))
     }
 }
 
